@@ -1,11 +1,16 @@
-package com.techelevator.models;
+package com.techelevator.utilities;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Audit {
 
     private File auditFile;  // holds the logFile object
     private PrintWriter writer; // writer instantiation of the PrintWriter class
+    private DateTimeFormatter auditFileDateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm:ss a");
+    private String auditEntryTime  = auditFileDateTimeFormatter.format(LocalDateTime.now());
 
     public Audit(String pathName){  // constructor will set up File object
         this.auditFile = new File(pathName);
@@ -27,7 +32,7 @@ public class Audit {
     }
 
     public void write(String message) {
-        this.writer.println(message);  // this puts the message in the buffer!
+        this.writer.println(message);
         this.writer.flush();
     }
 
@@ -35,4 +40,12 @@ public class Audit {
         this.writer.close();
     }
 
+    public void logEntryToAuditFile(Audit auditFile, BigDecimal addedAmount, BigDecimal machineBalance, String transactionType, String slotId) {
+        try {
+            String formattedAuditFileEntry = String.format("%-20s %-16s %2s %7s %7s", auditEntryTime, transactionType, slotId, "$" + addedAmount, "$" + machineBalance);
+            auditFile.write(formattedAuditFileEntry);
+        } catch (Exception e) {
+            System.out.println("Logging error.");
+        }
+    }
 }

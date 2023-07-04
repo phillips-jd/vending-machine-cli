@@ -4,10 +4,12 @@ import com.techelevator.ui.UserInput;
 import com.techelevator.ui.UserOutput;
 
 import com.techelevator.models.*;
+import com.techelevator.utilities.Audit;
+import com.techelevator.utilities.InventoryBuilder;
+import com.techelevator.utilities.SalesLog;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,16 +19,15 @@ import java.util.Scanner;
 
 public class VendingMachine {
 
-    private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm:ss a");
-    private static DateTimeFormatter salesDateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd-yy-hhmmssa");
-    private static String entryTime = dateTimeFormatter.format(LocalDateTime.now());
-    private static Audit auditFile = new Audit("audit.txt");
+    private static DateTimeFormatter salesLogDateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd-yy-hhmmssa");
+    private Audit auditFile = new Audit("audit.txt");
     private List<Item> itemList = new ArrayList<>();
-    private static BigDecimal totalSales = new BigDecimal("0.00");
+    private BigDecimal totalSales = new BigDecimal("0.00");
     private boolean isOn = true;
     private boolean exitLoop = true;
     private Fund funds = new Fund();
     private static int transactionCounter = 1;
+    private InventoryBuilder inventoryBuilder;
     
 
     public VendingMachine() {
@@ -69,15 +70,13 @@ public class VendingMachine {
 
     public void run() {
 
-        inventoryBuilder(itemList);
+        inventoryBuilder = new InventoryBuilder(itemList);
 
         while(isOn()) {
-
             UserOutput.displayHomeScreen();
             String choice = UserInput.getHomeScreenOption();
-
             if(choice.equals("display")) {
-                displayAvailableItems(itemList);
+                UserOutput.displayAvailableItems(itemList);
             }
             else if(choice.equals("purchase")) {
                 while (exitLoop) {
@@ -88,7 +87,7 @@ public class VendingMachine {
                         selectItem(itemList, funds, UserInput.purchaseSelect(itemList));
                     } else if (choice2.equalsIgnoreCase("finish")) {
                         System.out.println(funds.makeChange());
-                        logEntryToAuditFile(auditFile,funds.getChangeDue(),funds.getMachineBalance(),"CHANGE GIVEN:", "");
+                        auditFile.logEntryToAuditFile(auditFile,funds.getChangeDue(),funds.getMachineBalance(),"CHANGE GIVEN:", "");
                         break;
                     } else {
                         break;
@@ -98,7 +97,6 @@ public class VendingMachine {
             } else if (choice.equalsIgnoreCase("sales")) {
                 createSalesReport(itemList);
             }
-
             else if(choice.equals("exit")) {
                 break;
             }
@@ -109,40 +107,40 @@ public class VendingMachine {
         return isOn;
     }
 
-    public void inventoryBuilder(List<Item> itemList) {
+//    public void inventoryBuilder(List<Item> itemList) {
+//
+//        File sourceFile = new File("catering1.csv");
+//        try (Scanner inputFile = new Scanner(sourceFile)) {
+//            while (inputFile.hasNextLine()) {
+//                String line = inputFile.nextLine();
+//                String[] lineArr = line.split(",");
+//                String name = lineArr[3];
+//
+//                if(name.equalsIgnoreCase("gum")) {
+//                    itemList.add(new Gum(lineArr[1],new BigDecimal(lineArr[2]),lineArr[0]));
+//                } else if(name.equalsIgnoreCase("drink")) {
+//                    itemList.add(new Drink(lineArr[1],new BigDecimal(lineArr[2]),lineArr[0]));
+//                } else if(name.equalsIgnoreCase("candy")) {
+//                    itemList.add(new Candy(lineArr[1],new BigDecimal(lineArr[2]),lineArr[0]));
+//                } else if(name.equalsIgnoreCase("Munchy")) {
+//                    itemList.add(new Munchy(lineArr[1],new BigDecimal(lineArr[2]),lineArr[0]));
+//                }
+//            }
+//        } catch(FileNotFoundException e) {
+//            System.out.println("File Not Found.");
+//        }
+//    }
 
-        File sourceFile = new File("catering1.csv");
-        try (Scanner inputFile = new Scanner(sourceFile)) {
-            while (inputFile.hasNextLine()) {
-                String line = inputFile.nextLine();
-                String[] lineArr = line.split(",");
-                String name = lineArr[3];
-
-                if(name.equalsIgnoreCase("gum")) {
-                    itemList.add(new Gum(lineArr[1],new BigDecimal(lineArr[2]),lineArr[0]));
-                } else if(name.equalsIgnoreCase("drink")) {
-                    itemList.add(new Drink(lineArr[1],new BigDecimal(lineArr[2]),lineArr[0]));
-                } else if(name.equalsIgnoreCase("candy")) {
-                    itemList.add(new Candy(lineArr[1],new BigDecimal(lineArr[2]),lineArr[0]));
-                } else if(name.equalsIgnoreCase("Munchy")) {
-                    itemList.add(new Munchy(lineArr[1],new BigDecimal(lineArr[2]),lineArr[0]));
-                }
-            }
-        } catch(FileNotFoundException e) {
-            System.out.println("File Not Found.");
-        }
-    }
-
-    public static void displayAvailableItems(List<Item> itemList) {
-        System.out.format("%-20s %-6s %-8s %-8s%n", "Item Name", "Slot", "Price", "Qty");
-        System.out.println("-----------------------------------------");
-        for(Item currentItem : itemList) {
-            System.out.format("%-20s %-6s %-8s %-8s%n", currentItem.getItemName(),
-                    currentItem.getSlotLocation(),
-                    "$" + currentItem.getPurchasePrice(),
-                    (currentItem.getItemQuantity() > 0) ? currentItem.getItemQuantity() : "NO LONGER AVAILABLE");
-        }
-    }
+//    public static void displayAvailableItems(List<Item> itemList) {
+//        System.out.format("%-20s %-6s %-8s %-8s%n", "Item Name", "Slot", "Price", "Qty");
+//        System.out.println("-----------------------------------------");
+//        for(Item currentItem : itemList) {
+//            System.out.format("%-20s %-6s %-8s %-8s%n", currentItem.getItemName(),
+//                    currentItem.getSlotLocation(),
+//                    "$" + currentItem.getPurchasePrice(),
+//                    (currentItem.getItemQuantity() > 0) ? currentItem.getItemQuantity() : "NO LONGER AVAILABLE");
+//        }
+//    }
 
     public static void selectItem(List<Item> itemList, Fund fund, String slotInput) {
         BigDecimal discount = fund.getDISCOUNT();
@@ -184,16 +182,12 @@ public class VendingMachine {
             currentItem.setDiscountedSold(currentItem.getDiscountedSold()+1);
             System.out.println("You saved $" + discount);
             dispenseItem(currentItem, fund);
-            // in logEntry: subbed fund.getMachineBalance().add(currentItem.getPurchasePrice().subtract(discount))
-            // for currentItem.getPurchasePrice().subtract(discount) to match readme example
             logEntryToAuditFile(auditFile, fund.getMachineBalance().add(currentItem.getPurchasePrice().subtract(discount)), fund.getMachineBalance(), transactionType, currentItem.getSlotLocation());
             totalSales = totalSales.add(applyDiscount(currentItem.getPurchasePrice(), discount, currentItem));
         } else {
             fund.removeFunds(currentItem.getPurchasePrice());
             currentItem.setFullPriceSold(currentItem.getFullPriceSold() + 1);
             dispenseItem(currentItem, fund);
-            // in logEntry: subbed fund.getMachineBalance().add(currentItem.getPurchasePrice())
-            // for currentItem.getPurchasePrice() to match readme example
             logEntryToAuditFile(auditFile, fund.getMachineBalance().add(currentItem.getPurchasePrice()), fund.getMachineBalance(), transactionType, currentItem.getSlotLocation());
             totalSales = totalSales.add(currentItem.getPurchasePrice());
         }
@@ -219,14 +213,14 @@ public class VendingMachine {
         }
     }
 
-    public static void logEntryToAuditFile(Audit auditFile, BigDecimal addedAmount, BigDecimal machineBalance, String transactionType, String slotId) {
-        try {
-            String formattedEntry = String.format("%-20s %-16s %2s %7s %7s", entryTime, transactionType, slotId, "$" + addedAmount, "$" + machineBalance);
-            auditFile.write(formattedEntry);
-        } catch (Exception e) {
-            System.out.println("Logging error.");
-        }
-    }
+//    public static void logEntryToAuditFile(Audit auditFile, BigDecimal addedAmount, BigDecimal machineBalance, String transactionType, String slotId) {
+//        try {
+//            String formattedEntry = String.format("%-20s %-16s %2s %7s %7s", entryTime, transactionType, slotId, "$" + addedAmount, "$" + machineBalance);
+//            auditFile.write(formattedEntry);
+//        } catch (Exception e) {
+//            System.out.println("Logging error.");
+//        }
+//    }
 
     public static BigDecimal applyDiscount(BigDecimal purchasePrice, BigDecimal discount, Item item) {
         BigDecimal discountedPrice = purchasePrice.subtract(discount);
@@ -240,7 +234,7 @@ public class VendingMachine {
 
     public static void createSalesReport(List<Item> itemList){
 
-        String pathName = String.format("%s%s",salesDateTimeFormatter.format(LocalDateTime.now()),"-SaleLog.txt");
+        String pathName = String.format("%s%s",salesLogDateTimeFormatter.format(LocalDateTime.now()),"-SaleLog.txt");
         SalesLog salesLog = new SalesLog(pathName);
         salesLog.write("Taste Elevator Sales Report");
         for (Item item : itemList) {

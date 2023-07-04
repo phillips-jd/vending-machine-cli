@@ -124,7 +124,7 @@ public class UserInput {
 
     public static String purchaseSelect(List<Item> itemList){
         System.out.println();
-        VendingMachine.displayAvailableItems(itemList);
+        UserOutput.displayAvailableItems(itemList);
         UserOutput.displayMessage("Enter a slot number to purchase an item: ");
         String selectedOption = UserInput.scanner.nextLine();
         String slotInput = selectedOption.trim().toLowerCase();

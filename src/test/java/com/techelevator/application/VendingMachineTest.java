@@ -1,16 +1,13 @@
 package com.techelevator.application;
 
-import com.techelevator.application.VendingMachine;
-import com.techelevator.models.Audit;
+import com.techelevator.utilities.Audit;
 import com.techelevator.models.Drink;
 import com.techelevator.models.Gum;
 import com.techelevator.models.Item;
-import com.techelevator.ui.UserInput;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
