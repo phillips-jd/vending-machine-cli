@@ -1,47 +1,53 @@
 package com.techelevator.utilities;
 
+import com.techelevator.models.Item;
+
 import java.io.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class SalesLog {
-    private String pathName;
-    private File logFile;  // holds the logFile object
-    private PrintWriter writer; // writer instantiation of the PrintWriter class
+    private DateTimeFormatter salesLogDateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd-yy-hhmmssa");
+    private String pathName = String.format("%s%s",salesLogDateTimeFormatter.format(LocalDateTime.now()),"-SaleLog.txt");
+    private File salesLogFile;
+    private static PrintWriter writer;
 
-    public SalesLog(String pathName){  // constructor will set up File object
-        this.logFile = new File(pathName);
-        if (this.logFile.exists()){
-            // if this logFile exists we want to append
+    public SalesLog(List<Item> itemList, BigDecimal totalSales){
+        this.salesLogFile = new File(pathName);
+        if (this.salesLogFile.exists()){
             try {
-                this.writer = new PrintWriter(new FileWriter(this.logFile, true));
+                this.writer = new PrintWriter(new FileWriter(this.salesLogFile, true));
             } catch (IOException e) {
                 System.out.println("Process has been interrupted. Please review your audit file settings.");
             }
         }
         else {
             try {
-                this.writer = new PrintWriter(this.logFile);
+                this.writer = new PrintWriter(this.salesLogFile);
+                write("Taste Elevator Sales Report");
+                for (Item item : itemList) {
+                    try {
+                        String formattedEntry = String.format("%s|%s|%s", item.getItemName(), item.getFullPriceSold() , item.getDiscountedSold());
+                        write(formattedEntry);
+                    } catch (Exception e) {
+                        System.out.println("Logging error.");
+                    }
+                }
+                write("TOTAL SALES " + totalSales);
             } catch (FileNotFoundException e) {
                 System.out.println("File not found. Please review your audit file settings.");
             }
         }
     }
 
-    public String getPathName() {
-        return pathName;
+    public static void write(String message) {
+        writer.println(message);  // this puts the message in the buffer!
+        writer.flush();
     }
 
-    public void setPathName(String pathName) {
-        this.pathName = pathName;
+    public static void close() throws IOException {
+        writer.close();
     }
-
-    public void write(String message) {
-        this.writer.println(message);  // this puts the message in the buffer!
-        this.writer.flush();
-    }
-
-    public void close() throws IOException {
-        this.writer.close();
-    }
-
-
 }

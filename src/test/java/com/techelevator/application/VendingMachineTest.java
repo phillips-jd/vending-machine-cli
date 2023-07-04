@@ -4,6 +4,7 @@ import com.techelevator.utilities.Audit;
 import com.techelevator.models.Drink;
 import com.techelevator.models.Gum;
 import com.techelevator.models.Item;
+import com.techelevator.utilities.MoneyHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class VendingMachineTest {
     @Test
     public void selectItem_prints_item_no_longer_available_message_if_quantity_is_0() {
         List<Item> testList = new ArrayList<>();
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         testList.add(new Gum("testGum1", new BigDecimal("1.65"), "A1"));
         testList.add(new Gum("testGum2", new BigDecimal("2.65"), "A2"));
         testList.add(new Drink("testDrink1", new BigDecimal("1.65"), "B1"));
@@ -70,7 +71,7 @@ public class VendingMachineTest {
     @Test
     public void selectItem_prints_insufficient_funds_if_balance_0_always_passes() {
         List<Item> testList = new ArrayList<>();
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         testList.add(new Gum("testGum1", new BigDecimal("1.65"), "A1"));
         testList.add(new Gum("testGum2", new BigDecimal("2.65"), "A2"));
         testList.add(new Drink("testDrink1", new BigDecimal("1.65"), "B1"));
@@ -85,7 +86,7 @@ public class VendingMachineTest {
     @Test
     public void selectItem_prints_item_name_and_price_and_balance_and_jingle_with_valid_slot_and_funds_always_passes() {
         List<Item> testList = new ArrayList<>();
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         testFunds.setMachineBalance(new BigDecimal("5"));
         testList.add(new Gum("testGum1", new BigDecimal("1.65"), "A1"));
         testList.add(new Gum("testGum2", new BigDecimal("2.65"), "A2"));
@@ -101,7 +102,7 @@ public class VendingMachineTest {
     @Test
     public void selectItem_prints_slot_id_error_if_slot_input_is_invalid_always_passes() {
         List<Item> testList = new ArrayList<>();
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         testFunds.setMachineBalance(new BigDecimal("5"));
         testList.add(new Gum("testGum1", new BigDecimal("1.65"), "A1"));
         testList.add(new Gum("testGum2", new BigDecimal("2.65"), "A2"));
@@ -116,7 +117,7 @@ public class VendingMachineTest {
 
     @Test
     public void dispenseItem_decrements_item_quantity_by_1() {
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Item testItem = new Gum("testGum", new BigDecimal("1.65"), "a1");
         int initialQuantity = 6;
         testItem.setItemQuantity(initialQuantity);
@@ -126,21 +127,21 @@ public class VendingMachineTest {
 
     @Test
     public void dispenseItem_prints_item_name_and_gum_jingle_and_balance_always_passes() {
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Item testItem = new Gum("testGum", new BigDecimal("1.65"), "a1");
         VendingMachine.dispenseItem(testItem, testFunds);
     }
 
     @Test
     public void dispenseItem_prints_item_name_and_drink_jingle_and_balance_always_passes() {
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Item testItem = new Drink("testDrink", new BigDecimal("1.65"), "a1");
         VendingMachine.dispenseItem(testItem, testFunds);
     }
 
     @Test
     public void dispenseItem_prints_full_item_price_if_transaction_counter_not_even_always_passes() {
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Item testItem = new Drink("testDrink", new BigDecimal("1.65"), "a1");
         VendingMachine.setTransactionCounter(1);
         VendingMachine.dispenseItem(testItem, testFunds);
@@ -148,7 +149,7 @@ public class VendingMachineTest {
 
     @Test
     public void dispenseItem_prints_discounted_item_price_if_transaction_counter_is_even_always_passes() {
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Item testItem = new Drink("testDrink", new BigDecimal("1.65"), "a1");
         VendingMachine.setTransactionCounter(2);
         VendingMachine.dispenseItem(testItem, testFunds);
@@ -156,75 +157,75 @@ public class VendingMachineTest {
 
     @Test
     public void completeTransaction_should_remove_full_item_price_from_machine_balance_if_no_discount() {
-        Fund testFund = new Fund();
+        MoneyHandler testMoneyHandler = new MoneyHandler();
         BigDecimal initialBalance = new BigDecimal("5");
-        testFund.setMachineBalance(initialBalance);
+        testMoneyHandler.setMachineBalance(initialBalance);
         Item testItem = new Gum("testGum", new BigDecimal("1.65"), "a1");
         boolean isDiscounted = false;
         BigDecimal expected = initialBalance.subtract(testItem.getPurchasePrice());
-        VendingMachine.completeTransaction(testFund, testItem, isDiscounted);
-        Assert.assertEquals(expected, testFund.getMachineBalance());
+        VendingMachine.completeTransaction(testMoneyHandler, testItem, isDiscounted);
+        Assert.assertEquals(expected, testMoneyHandler.getMachineBalance());
     }
 
     @Test
     public void completeTransaction_should_remove_item_price_less_1_from_machine_balance_if_discounted() {
-        Fund testFund = new Fund();
+        MoneyHandler testMoneyHandler = new MoneyHandler();
         BigDecimal discount = new BigDecimal("1");
         BigDecimal initialBalance = new BigDecimal("5");
-        testFund.setMachineBalance(initialBalance);
+        testMoneyHandler.setMachineBalance(initialBalance);
         Item testItem = new Gum("testGum", new BigDecimal("1.65"), "a1");
         boolean isDiscounted = true;
         BigDecimal expected = initialBalance.subtract(testItem.getPurchasePrice().subtract(discount));
-        VendingMachine.completeTransaction(testFund, testItem, isDiscounted);
-        Assert.assertEquals(expected, testFund.getMachineBalance());
+        VendingMachine.completeTransaction(testMoneyHandler, testItem, isDiscounted);
+        Assert.assertEquals(expected, testMoneyHandler.getMachineBalance());
     }
 
     @Test
     public void feedMenuAction_should_increase_balance_by_1_if_input_is_1() {
         String testInput = "1";
-        Fund testFund = new Fund();
-        BigDecimal initialBalance = testFund.getMachineBalance();
-        sut.feedMenuAction(testInput, testFund);
-        BigDecimal actual = testFund.getMachineBalance();
-        Assert.assertEquals(initialBalance.add(testFund.getONE_DOLLAR_BILL()), actual);
+        MoneyHandler testMoneyHandler = new MoneyHandler();
+        BigDecimal initialBalance = testMoneyHandler.getMachineBalance();
+        sut.feedMenuAction(testInput, testMoneyHandler);
+        BigDecimal actual = testMoneyHandler.getMachineBalance();
+        Assert.assertEquals(initialBalance.add(testMoneyHandler.getONE_DOLLAR_BILL()), actual);
     }
 
     @Test
     public void feedMenuAction_should_increase_balance_by_5_if_input_is_5() {
         String testInput = "5";
-        Fund testFund = new Fund();
-        BigDecimal initialBalance = testFund.getMachineBalance();
-        sut.feedMenuAction(testInput, testFund);
-        BigDecimal actual = testFund.getMachineBalance();
-        Assert.assertEquals(initialBalance.add(testFund.getFIVE_DOLLAR_BILL()), actual);
+        MoneyHandler testMoneyHandler = new MoneyHandler();
+        BigDecimal initialBalance = testMoneyHandler.getMachineBalance();
+        sut.feedMenuAction(testInput, testMoneyHandler);
+        BigDecimal actual = testMoneyHandler.getMachineBalance();
+        Assert.assertEquals(initialBalance.add(testMoneyHandler.getFIVE_DOLLAR_BILL()), actual);
     }
 
     @Test
     public void feedMenuAction_should_increase_balance_by_10_if_input_is_10() {
         String testInput = "10";
-        Fund testFund = new Fund();
-        BigDecimal initialBalance = testFund.getMachineBalance();
-        sut.feedMenuAction(testInput, testFund);
-        BigDecimal actual = testFund.getMachineBalance();
-        Assert.assertEquals(initialBalance.add(testFund.getTEN_DOLLAR_BILL()), actual);
+        MoneyHandler testMoneyHandler = new MoneyHandler();
+        BigDecimal initialBalance = testMoneyHandler.getMachineBalance();
+        sut.feedMenuAction(testInput, testMoneyHandler);
+        BigDecimal actual = testMoneyHandler.getMachineBalance();
+        Assert.assertEquals(initialBalance.add(testMoneyHandler.getTEN_DOLLAR_BILL()), actual);
     }
 
     @Test
     public void feedMenuAction_should_increase_balance_by_20_if_input_is_20() {
         String testInput = "20";
-        Fund testFund = new Fund();
-        BigDecimal initialBalance = testFund.getMachineBalance();
-        sut.feedMenuAction(testInput, testFund);
-        BigDecimal actual = testFund.getMachineBalance();
-        Assert.assertEquals(initialBalance.add(testFund.getTWENTY_DOLLAR_BILL()), actual);
+        MoneyHandler testMoneyHandler = new MoneyHandler();
+        BigDecimal initialBalance = testMoneyHandler.getMachineBalance();
+        sut.feedMenuAction(testInput, testMoneyHandler);
+        BigDecimal actual = testMoneyHandler.getMachineBalance();
+        Assert.assertEquals(initialBalance.add(testMoneyHandler.getTWENTY_DOLLAR_BILL()), actual);
     }
 
     @Test
     public void feedMenuAction_should_throw_exception_for_invalid_input() {
         String testInput = "e";
-        Fund testFund = new Fund();
+        MoneyHandler testMoneyHandler = new MoneyHandler();
         try {
-            sut.feedMenuAction(testInput, testFund);
+            sut.feedMenuAction(testInput, testMoneyHandler);
         } catch (IllegalArgumentException e) {
             System.out.println("Whoops");
         }

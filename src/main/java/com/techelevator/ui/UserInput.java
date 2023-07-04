@@ -1,7 +1,6 @@
 package com.techelevator.ui;
 
-import com.techelevator.application.Fund;
-import com.techelevator.application.VendingMachine;
+import com.techelevator.utilities.MoneyHandler;
 import com.techelevator.models.Item;
 
 import java.util.List;
@@ -58,7 +57,7 @@ public class UserInput {
 
     }
 
-    public static String getPurchaseScreenOption(Fund funds) {
+    public static String getPurchaseScreenOption(MoneyHandler funds) {
         System.out.println();
         System.out.println("What would you like to do?");
         System.out.println();
@@ -89,7 +88,7 @@ public class UserInput {
         }
     }
 
-    public static String feedMoneyMenu(Fund fund) {
+    public static String feedMoneyMenu(MoneyHandler moneyHandler) {
         System.out.println();
         System.out.println("How much money would you like to add?");
         System.out.println();
@@ -100,7 +99,7 @@ public class UserInput {
         System.out.println("20) $20");
         System.out.println("E) Exit");
         System.out.println();
-        System.out.println("Current Money Provided: $" + fund.getMachineBalance());
+        System.out.println("Current Money Provided: $" + moneyHandler.getMachineBalance());
         System.out.println();
         System.out.print("Please select an option: ");
 

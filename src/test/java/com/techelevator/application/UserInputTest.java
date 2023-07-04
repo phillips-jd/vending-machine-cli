@@ -4,11 +4,10 @@ import com.techelevator.models.Drink;
 import com.techelevator.models.Gum;
 import com.techelevator.models.Item;
 import com.techelevator.ui.UserInput;
+import com.techelevator.utilities.MoneyHandler;
 import org.junit.*;
 
-import java.io.*;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -45,7 +44,7 @@ public class UserInputTest {
     @Test
     public void getPurchaseScreenOption_returns_string_feed_if_input_string_m() {
         String testInput = "m";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         String actual = UserInput.getPurchaseScreenOption(testFunds);
@@ -55,7 +54,7 @@ public class UserInputTest {
     @Test
     public void getPurchaseScreenOption_returns_string_select_if_input_string_s() {
         String testInput = "s";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         String actual = UserInput.getPurchaseScreenOption(testFunds);
@@ -65,7 +64,7 @@ public class UserInputTest {
     @Test
     public void getPurchaseScreenOption_returns_string_finish_if_input_string_f() {
         String testInput = "f";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         String actual = UserInput.getPurchaseScreenOption(testFunds);
@@ -75,7 +74,7 @@ public class UserInputTest {
     @Test
     public void getPurchaseScreenOption_returns_string_empty_if_input_string_invalid() {
         String testInput = "test";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         String actual = UserInput.getPurchaseScreenOption(testFunds);
@@ -85,7 +84,7 @@ public class UserInputTest {
     @Test
     public void feedMoneyMenu_returns_string_1_if_input_string_1() {
         String testInput = "1";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         String actual = UserInput.feedMoneyMenu(testFunds);
@@ -95,7 +94,7 @@ public class UserInputTest {
     @Test
     public void feedMoneyMenu_returns_string_5_if_input_string_5() {
         String testInput = "5";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         String actual = UserInput.feedMoneyMenu(testFunds);
@@ -105,7 +104,7 @@ public class UserInputTest {
     @Test
     public void feedMoneyMenu_returns_string_10_if_input_string_10() {
         String testInput = "10";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         String actual = UserInput.feedMoneyMenu(testFunds);
@@ -115,7 +114,7 @@ public class UserInputTest {
     @Test
     public void feedMoneyMenu_returns_string_20_if_input_string_20() {
         String testInput = "20";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         String actual = UserInput.feedMoneyMenu(testFunds);
@@ -125,7 +124,7 @@ public class UserInputTest {
     @Test
     public void feedMoneyMenu_returns_string_e_if_input_string_e() {
         String testInput = "e";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         String actual = UserInput.feedMoneyMenu(testFunds);
@@ -135,7 +134,7 @@ public class UserInputTest {
     @Test (expected = IllegalArgumentException.class)
     public void feedMoneyMenu_returns_illegal_arg_ex_if_input_string_invalid() {
         String testInput = "test";
-        Fund testFunds = new Fund();
+        MoneyHandler testFunds = new MoneyHandler();
         Scanner scanner = new Scanner(testInput);
         UserInput.setScanner(scanner);
         UserInput.feedMoneyMenu(testFunds);

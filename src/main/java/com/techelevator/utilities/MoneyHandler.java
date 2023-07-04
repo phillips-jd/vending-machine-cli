@@ -1,11 +1,11 @@
-package com.techelevator.application;
+package com.techelevator.utilities;
 
-import com.techelevator.models.Item;
+import com.techelevator.application.VendingMachine;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public class Fund {
+public class MoneyHandler {
 
     private final BigDecimal DISCOUNT = new BigDecimal("1.00");
     private BigDecimal machineBalance = new BigDecimal("0.00");
@@ -21,7 +21,7 @@ public class Fund {
 
     //Map<String,Integer> wallet = new HashMap<>();
 
-    public Fund() {
+    public MoneyHandler() {
 
     }
 

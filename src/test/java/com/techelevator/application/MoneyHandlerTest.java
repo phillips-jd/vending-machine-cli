@@ -1,16 +1,17 @@
 package com.techelevator.application;
 
+import com.techelevator.utilities.MoneyHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 
-public class FundTest {
-    private Fund sut;
+public class MoneyHandlerTest {
+    private MoneyHandler sut;
     @Before
     public void setUp() throws Exception {
-        sut = new Fund();
+        sut = new MoneyHandler();
     }
 
     @Test

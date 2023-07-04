@@ -6,26 +6,23 @@ import com.techelevator.ui.UserOutput;
 import com.techelevator.models.*;
 import com.techelevator.utilities.Audit;
 import com.techelevator.utilities.InventoryBuilder;
+import com.techelevator.utilities.MoneyHandler;
 import com.techelevator.utilities.SalesLog;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class VendingMachine {
 
-    private static DateTimeFormatter salesLogDateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd-yy-hhmmssa");
     private Audit auditFile = new Audit("audit.txt");
     private List<Item> itemList = new ArrayList<>();
     private BigDecimal totalSales = new BigDecimal("0.00");
     private boolean isOn = true;
     private boolean exitLoop = true;
-    private Fund funds = new Fund();
+    private MoneyHandler funds = new MoneyHandler();
     private static int transactionCounter = 1;
     private InventoryBuilder inventoryBuilder;
     
@@ -51,19 +48,19 @@ public class VendingMachine {
     }
 
 
-    public static BigDecimal getTotalSales() {
+    public BigDecimal getTotalSales() {
         return totalSales;
     }
 
-    public static void setTotalSales(BigDecimal totalSales) {
-        VendingMachine.totalSales = totalSales;
+    public void setTotalSales(BigDecimal totalSales) {
+        this.totalSales = totalSales;
     }
 
-    public Fund getFunds() {
+    public MoneyHandler getFunds() {
         return funds;
     }
 
-    public void setFunds(Fund funds) {
+    public void setFunds(MoneyHandler funds) {
         this.funds = funds;
     }
 
@@ -95,7 +92,7 @@ public class VendingMachine {
                 }
                 exitLoop = true;
             } else if (choice.equalsIgnoreCase("sales")) {
-                createSalesReport(itemList);
+                SalesLog salesLog = new SalesLog(itemList, totalSales);
             }
             else if(choice.equals("exit")) {
                 break;
@@ -142,8 +139,8 @@ public class VendingMachine {
 //        }
 //    }
 
-    public static void selectItem(List<Item> itemList, Fund fund, String slotInput) {
-        BigDecimal discount = fund.getDISCOUNT();
+    public static void selectItem(List<Item> itemList, MoneyHandler moneyHandler, String slotInput) {
+        BigDecimal discount = moneyHandler.getDISCOUNT();
         boolean doesSlotExist = false;
 
         for (Item currentItem : itemList) {
@@ -151,10 +148,10 @@ public class VendingMachine {
                 doesSlotExist = true;
                 if (!currentItem.isAvailable()) {
                     UserOutput.displayMessage("Item is no longer available.");
-                } else if (fund.getMachineBalance().compareTo(currentItem.getPurchasePrice().subtract(discount)) >= 0 && isDiscounted(transactionCounter)) {
-                    completeTransaction(fund, currentItem, isDiscounted(transactionCounter));
-                } else if (fund.getMachineBalance().compareTo(currentItem.getPurchasePrice()) >= 0) {
-                    completeTransaction(fund, currentItem, isDiscounted(transactionCounter));
+                } else if (moneyHandler.getMachineBalance().compareTo(currentItem.getPurchasePrice().subtract(discount)) >= 0 && isDiscounted(transactionCounter)) {
+                    completeTransaction(moneyHandler, currentItem, isDiscounted(transactionCounter));
+                } else if (moneyHandler.getMachineBalance().compareTo(currentItem.getPurchasePrice()) >= 0) {
+                    completeTransaction(moneyHandler, currentItem, isDiscounted(transactionCounter));
                 } else {
                     System.out.println("Insufficient funds.");
                 }
@@ -165,7 +162,7 @@ public class VendingMachine {
         }
     }
 
-    public static void dispenseItem(Item item, Fund funds){
+    public static void dispenseItem(Item item, MoneyHandler funds){
         item.setItemQuantity(item.getItemQuantity() - 1);
         System.out.println("Item name: " + item.getItemName() + " | Item price: $" +
                 (((transactionCounter % 2 == 0) ? item.getPurchasePrice().subtract(new BigDecimal(1)) : item.getPurchasePrice()) + " | Remaining Balance: $" + funds.getMachineBalance()));
@@ -174,27 +171,27 @@ public class VendingMachine {
     }
 
 
-    public static void completeTransaction(Fund fund, Item currentItem, boolean isDiscounted){
+    public static void completeTransaction(MoneyHandler moneyHandler, Item currentItem, boolean isDiscounted){
         String transactionType = currentItem.getItemName();
-        BigDecimal discount = fund.getDISCOUNT();
+        BigDecimal discount = moneyHandler.getDISCOUNT();
         if (isDiscounted) {
-            fund.removeFunds(applyDiscount(currentItem.getPurchasePrice(), discount, currentItem));
+            moneyHandler.removeFunds(applyDiscount(currentItem.getPurchasePrice(), discount, currentItem));
             currentItem.setDiscountedSold(currentItem.getDiscountedSold()+1);
             System.out.println("You saved $" + discount);
-            dispenseItem(currentItem, fund);
-            logEntryToAuditFile(auditFile, fund.getMachineBalance().add(currentItem.getPurchasePrice().subtract(discount)), fund.getMachineBalance(), transactionType, currentItem.getSlotLocation());
+            dispenseItem(currentItem, moneyHandler);
+            logEntryToAuditFile(auditFile, moneyHandler.getMachineBalance().add(currentItem.getPurchasePrice().subtract(discount)), moneyHandler.getMachineBalance(), transactionType, currentItem.getSlotLocation());
             totalSales = totalSales.add(applyDiscount(currentItem.getPurchasePrice(), discount, currentItem));
         } else {
-            fund.removeFunds(currentItem.getPurchasePrice());
+            moneyHandler.removeFunds(currentItem.getPurchasePrice());
             currentItem.setFullPriceSold(currentItem.getFullPriceSold() + 1);
-            dispenseItem(currentItem, fund);
-            logEntryToAuditFile(auditFile, fund.getMachineBalance().add(currentItem.getPurchasePrice()), fund.getMachineBalance(), transactionType, currentItem.getSlotLocation());
+            dispenseItem(currentItem, moneyHandler);
+            logEntryToAuditFile(auditFile, moneyHandler.getMachineBalance().add(currentItem.getPurchasePrice()), moneyHandler.getMachineBalance(), transactionType, currentItem.getSlotLocation());
             totalSales = totalSales.add(currentItem.getPurchasePrice());
         }
 
     }
 
-    public void feedMenuAction(String option, Fund funds) {
+    public void feedMenuAction(String option, MoneyHandler funds) {
         String transactionType = "MONEY FED:";
         if (option.equals("1")) {
             funds.addFunds(funds.getONE_DOLLAR_BILL());
@@ -232,22 +229,22 @@ public class VendingMachine {
         return isDiscounted;
     }
 
-    public static void createSalesReport(List<Item> itemList){
-
-        String pathName = String.format("%s%s",salesLogDateTimeFormatter.format(LocalDateTime.now()),"-SaleLog.txt");
-        SalesLog salesLog = new SalesLog(pathName);
-        salesLog.write("Taste Elevator Sales Report");
-        for (Item item : itemList) {
-            try {
-                String formattedEntry = String.format("%s|%s|%s", item.getItemName(), item.getFullPriceSold() , item.getDiscountedSold());
-                salesLog.write(formattedEntry);
-            } catch (Exception e) {
-                System.out.println("Logging error.");
-            }
-        }
-        salesLog.write("TOTAL SALES " + totalSales);
-
-    }
+//    public static void createSalesLog(List<Item> itemList){
+//
+//        String pathName = String.format("%s%s",salesLogDateTimeFormatter.format(LocalDateTime.now()),"-SaleLog.txt");
+//        SalesLog salesLog = new SalesLog(pathName);
+//        salesLog.write("Taste Elevator Sales Report");
+//        for (Item item : itemList) {
+//            try {
+//                String formattedEntry = String.format("%s|%s|%s", item.getItemName(), item.getFullPriceSold() , item.getDiscountedSold());
+//                salesLog.write(formattedEntry);
+//            } catch (Exception e) {
+//                System.out.println("Logging error.");
+//            }
+//        }
+//        salesLog.write("TOTAL SALES " + totalSales);
+//
+//    }
 
 
 
