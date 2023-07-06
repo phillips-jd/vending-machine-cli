@@ -6,11 +6,6 @@ import com.techelevator.models.Item;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Responsibilities: This class should handle receiving ALL input from the User
- * 
- * Dependencies: None
- */
 public class UserInput {
 
     private static Scanner scanner = new Scanner(System.in);
@@ -117,7 +112,7 @@ public class UserInput {
         } else if (option.equals("e")) {
             return "e";
         } else {
-            throw new IllegalArgumentException();
+            return selectedOption;
         }
     }
 

@@ -1,6 +1,7 @@
 package com.techelevator.utilities;
 
 import com.techelevator.application.VendingMachine;
+import com.techelevator.models.Item;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,8 +19,6 @@ public class MoneyHandler {
     private final BigDecimal FIVE_DOLLAR_BILL = new BigDecimal("5.00");
     private final BigDecimal TEN_DOLLAR_BILL = new BigDecimal("10.00");
     private final BigDecimal TWENTY_DOLLAR_BILL = new BigDecimal("20.00");
-
-    //Map<String,Integer> wallet = new HashMap<>();
 
     public MoneyHandler() {
 
@@ -69,10 +68,6 @@ public class MoneyHandler {
         return this.changeDue;
     }
 
-    public void setChangeDue(BigDecimal changeDue) {
-        this.changeDue = changeDue;
-    }
-
     public void addFunds(BigDecimal amount){
         machineBalance =  machineBalance.add(amount);
         machineBalance = machineBalance.setScale(2, RoundingMode.HALF_UP);
@@ -87,18 +82,23 @@ public class MoneyHandler {
         }
     }
 
+    public static BigDecimal applyDiscount(BigDecimal purchasePrice, BigDecimal discount, Item item) {
+        BigDecimal discountedPrice = purchasePrice.subtract(discount);
+        return discountedPrice;
+    }
+
+    public static boolean isDiscounted(int transactionQuantity){
+        boolean isDiscounted = transactionQuantity % 2 == 0;
+        return isDiscounted;
+    }
+
     public String makeChange() {
         this.changeDue = machineBalance;
         int nickelQuantity = 0;
         int dimeQuantity = 0;
         int quarterQuantity = 0;
         int oneDollarBillQuantity = 0;
-        int fiveDollarBillQuantity;
-        int tenDollarBillQuantity;
-        int twentyDollarBillQuantity;
-
         while(machineBalance.compareTo(BigDecimal.ZERO)>0) {
-
             if(machineBalance.compareTo(ONE_DOLLAR_BILL)>-1) {
                 removeFunds(ONE_DOLLAR_BILL);
                 oneDollarBillQuantity++;
@@ -113,12 +113,48 @@ public class MoneyHandler {
                 nickelQuantity++;
             }
         }
-
         VendingMachine.setTransactionCounter(1);
         System.out.println();
         return String.format("Dollar bills: %s%nQuarters : %s%nDimes : %s%nNickels : %s%nTotal change returned: $%s%n",
                 oneDollarBillQuantity,quarterQuantity,dimeQuantity,nickelQuantity,changeDue);
+    }
 
+    public void completeTransaction(VendingMachine vendingMachine, MoneyHandler moneyHandler, Item currentItem, boolean isDiscounted, Audit auditFile, BigDecimal totalSales){
+        String transactionType = currentItem.getItemName();
+        BigDecimal discount = moneyHandler.getDISCOUNT();
+        if (isDiscounted) {
+            moneyHandler.removeFunds(applyDiscount(currentItem.getPurchasePrice(), discount, currentItem));
+            currentItem.setDiscountedSold(currentItem.getDiscountedSold()+1);
+            System.out.println("You saved $" + discount);
+            vendingMachine.dispenseItem(currentItem, moneyHandler);
+            auditFile.logEntryToAuditFile(auditFile, moneyHandler.getMachineBalance().add(currentItem.getPurchasePrice().subtract(discount)), moneyHandler.getMachineBalance(), transactionType, currentItem.getSlotLocation());
+            vendingMachine.setTotalSales(totalSales.add(applyDiscount(currentItem.getPurchasePrice(), discount, currentItem)));
+        } else {
+            moneyHandler.removeFunds(currentItem.getPurchasePrice());
+            currentItem.setFullPriceSold(currentItem.getFullPriceSold() + 1);
+            vendingMachine.dispenseItem(currentItem, moneyHandler);
+            auditFile.logEntryToAuditFile(auditFile, moneyHandler.getMachineBalance().add(currentItem.getPurchasePrice()), moneyHandler.getMachineBalance(), transactionType, currentItem.getSlotLocation());
+            vendingMachine.setTotalSales(totalSales.add(currentItem.getPurchasePrice()));
+        }
+    }
+
+    public void feedMoney(String option, MoneyHandler moneyHandler, Audit auditFile) {
+        String transactionType = "MONEY FED:";
+        if (option.equals("1")) {
+            moneyHandler.addFunds(moneyHandler.getONE_DOLLAR_BILL());
+            auditFile.logEntryToAuditFile(auditFile, moneyHandler.getONE_DOLLAR_BILL(), moneyHandler.getMachineBalance(), transactionType, "");
+        } else if (option.equals("5")) {
+            moneyHandler.addFunds(moneyHandler.getFIVE_DOLLAR_BILL());
+            auditFile.logEntryToAuditFile(auditFile, moneyHandler.getFIVE_DOLLAR_BILL(), moneyHandler.getMachineBalance(), transactionType, "");
+        } else if (option.equals("10")) {
+            moneyHandler.addFunds(moneyHandler.getTEN_DOLLAR_BILL());
+            auditFile.logEntryToAuditFile(auditFile, moneyHandler.getTEN_DOLLAR_BILL(), moneyHandler.getMachineBalance(), transactionType, "");
+        } else if (option.equals("20")) {
+            moneyHandler.addFunds(moneyHandler.getTWENTY_DOLLAR_BILL());
+            auditFile.logEntryToAuditFile(auditFile, moneyHandler.getTWENTY_DOLLAR_BILL(), moneyHandler.getMachineBalance(), transactionType, "");
+        } else {
+            System.out.println("This machine only accepts $1, $5, $10 or $20 bills at this time.");
+        }
     }
 
 }

@@ -6,13 +6,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-
-/**
- * Responsibilities: This class should handle formatting and displaying ALL
- * messages to the user
- * 
- * Dependencies: None
- */
 public class UserOutput
 {
 

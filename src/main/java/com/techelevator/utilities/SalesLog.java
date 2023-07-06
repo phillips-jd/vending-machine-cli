@@ -9,8 +9,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class SalesLog {
-    private DateTimeFormatter salesLogDateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd-yy-hhmmssa");
-    private String pathName = String.format("%s%s",salesLogDateTimeFormatter.format(LocalDateTime.now()),"-SaleLog.txt");
+    private DateTimeFormatter salesLogDateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd-yy_hh:mm:ssa");
+    private String pathName = String.format("%s%s",salesLogDateTimeFormatter.format(LocalDateTime.now()),"_SalesLog.txt");
     private File salesLogFile;
     private static PrintWriter writer;
 
